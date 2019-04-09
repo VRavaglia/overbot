@@ -1,4 +1,5 @@
 import logging
+import datetime
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
@@ -8,23 +9,66 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
+secao = {"mes": 0, "dia": 0, "hora": 0, "minuto": 0}
 
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
 def start(bot, update):
     bot.send_message(update.message.chat_id,"""  *Olá, sou o Bot corno oficial deste grupo*.\n
 Atualmente disponho dos seguintes comandos:\n
-/ajuda   -> Exibe esta mensagem\n
+/ajuda   -> Exibe esta mensagem.\n
 /proxima -> Lista a/as próximas sessoes marcadas\n
-/noob    -> Exibe uma serie de mensagens de instruções para iniciantes\n
+/marcar  -> Marca a próxima seção no seguinte formato: \"/marcar dia:mes:hora:minuto\"."
+/noob    -> Exibe uma serie de mensagens de instruções para iniciantes.\n
 Meu [repositório](https://github.com/VRavaglia/overbot)""", parse_mode= 'Markdown')
 
+def parse_marcar(texto):
+    global secao
+    try:
+        data = texto.split(' ')[1].split(':')
+        print(data)
+    except:
+        return False
+
+    if (len(data) != 4):
+        return False
+    try:
+        secao['dia'] = int(data[0])
+        secao['mes'] = int(data[1])
+        secao['hora'] = int(data[2])
+        secao['minuto'] = int(data[3])
+    except:
+        return False
+
+    return True
+
+
+def marcar(bot, update):  
+    print(update.message.text)
+    if (parse_marcar(update.message.text)):
+        mensagem = "Próxima sessão marcada!"
+    else:
+        mensagem = "Não entendi a data, escreva no seguinte formato: \"/marcar dia:mes:hora:minuto\"."
+    bot.send_message(update.message.chat_id,mensagem, parse_mode= 'Markdown')
 
 def proxima(bot, update):
-    bot.send_message(update.message.chat_id,'Eu ainda nao sei fazer isso...', parse_mode= 'Markdown')
+    mensagem = "Não há sessão marcada."
+    if (secao["dia"] != 0):
+        mensagem = "A próxima sessão será: "+ str(secao["dia"]) + "/" + str(secao["mes"]) + " às " + str(secao["hora"]) + ':' + str(secao["minuto"]) + '.'
+    bot.send_message(update.message.chat_id,mensagem, parse_mode= 'Markdown')
 
 def noob(bot, update):
-    bot.send_message(update.message.chat_id,"""  Primeiramente, bom/boa dia/tarde/noite (meu desenvolvedor ainda não gera esse tipo de mensagem de forma inteligente)\n\n
+    time = datetime.datetime.now().time().hour
+    if (time < 6):
+        bomdia = "boa noite!"
+    elif (time < 12):
+        bomdia = "bom dia!"
+    elif (time < 18):
+        bomdia = "boa tarde!"
+    else:
+        bomdia = "boa noite!"
+
+    bot.send_message(update.message.chat_id,"  Primeiramente, " + bomdia + """\n\n
 *1* - Peça para o @raposo criar uma ficha no Roll20 para você.\n
 *2* - Falando em Roll20, segue o link da [aventura](https://app.roll20.net/join/4330618/qy_bdA)\n
 *3* - No canto superior direito há um ícone de um \"jornal\" se você seguiu o passo 1, terá um personagem com
@@ -64,6 +108,7 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("ajuda", start))
     dp.add_handler(CommandHandler("proxima", proxima))
+    dp.add_handler(CommandHandler("marcar", marcar))
     dp.add_handler(CommandHandler("noob", noob))
 
     # log all errors
@@ -80,3 +125,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
