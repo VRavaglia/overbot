@@ -54,7 +54,7 @@ def marcar(bot, update):
 def proxima(bot, update):
     mensagem = "Não há sessão marcada."
     if (secao["dia"] != 0):
-        mensagem = "A próxima sessão será: "+ str(secao["dia"]) + "/" + str(secao["mes"]) + " às " + str(secao["hora"]) + ':' + str(secao["minuto"]) + '.'
+        mensagem = "A próxima sessão será: "+ str(secao["dia"]).zfill(2) + "/" + str(secao["mes"]).zfill(2) + " às " + str(secao["hora"]).zfill(2) + ':' + str(secao["minuto"]).zfill(2) + '.'
     bot.send_message(update.message.chat_id,mensagem, parse_mode= 'Markdown')
 
 def noob(bot, update):
